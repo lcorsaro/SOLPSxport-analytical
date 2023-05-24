@@ -184,6 +184,7 @@ def main(gfile_loc = None, new_filename='b2.transport.inputfile_new',
     shotnum = int(shotnum)
 
     print("Initializing SOLPSxport")
+    
     xp = sxp.SOLPSxport(workdir=os.getcwd(), gfile_loc=gfile_loc, impurity_list=impurity_list)
 
     print("Reading SOLPS output")
