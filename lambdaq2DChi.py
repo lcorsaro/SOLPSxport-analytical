@@ -5,8 +5,8 @@ from SOLPSutils import read_dsa
 
 from DChi import alphafunc_analytic,Darr_semianalytic,Chiarr_semianalytic,SOLPS2spline
 
-def main(workdir,gfile_loc,lambdaq,n0,T0):
-    SOLPSobj = SOLPSxport(workdir=workdir,gfile_loc=gfile_loc,impurity_list=[])
+def main(workdir,lambdaq):
+    SOLPSobj = SOLPSxport(workdir=workdir,gfile_loc=None,impurity_list=[])
 
     SOLPSobj.getSOLPSlast10Profs()
     SOLPSobj.getSOLPSfluxProfs()
@@ -17,18 +17,19 @@ def main(workdir,gfile_loc,lambdaq,n0,T0):
     qiS=SOLPSobj.data['solpsData']['profiles']['qi']
     TeS=SOLPSobj.data['solpsData']['last10']['te']
     TiS=SOLPSobj.data['solpsData']['last10']['ti']
+    neS=SOLPSobj.data['solpsData']['last10']['ne']
 
     Lambdan=21/4
     LambdaT=7/2
-    # nfunc=alphafunc_analytic(n0,lambdaq,Lambdan)
-    # Tfunc=alphafunc_analytic(T0,lambdaq,LambdaT)
-    # qfunc=alphafunc_analytic(q0,lambdaq)
-    import pdb ; pdb.set_trace()
-    lambdaq=float(lambdaq);n0=float(n0);T0=float(T0)
+    lambdaq=float(lambdaq)
     dsa = np.array(dsa)
+    eV = 1.60217662e-19
+    n0=SOLPS2spline(neS,dsa)(0)
+    Te0=SOLPS2spline(TeS,dsa)(0)
+    Ti0=SOLPS2spline(TiS,dsa)(0)
     D = Darr_semianalytic(lambdaq,n0,Lambdan,GammaS,dsa)
-    Chii = Chiarr_semianalytic(lambdaq,n0,Lambdan,T0,LambdaT,GammatotS,qiS,TiS,dsa)
-    Chie = Chiarr_semianalytic(lambdaq,n0,Lambdan,T0,LambdaT,GammatotS,qeS,TeS,dsa)
+    Chii = Chiarr_semianalytic(lambdaq,n0,Lambdan,Ti0*eV,LambdaT,GammatotS,qiS,TiS*eV,dsa)
+    Chie = Chiarr_semianalytic(lambdaq,n0,Lambdan,Te0*eV,LambdaT,GammatotS,qeS,TeS*eV,dsa)
 
     SOLPSobj.data['solpsData']['xportCoef']={
         'dnew_flux':D,
@@ -37,14 +38,10 @@ def main(workdir,gfile_loc,lambdaq,n0,T0):
         'vr_carbon':None, 'D_carbon':None,
     }
 
-    write = False
-    import pdb ; pdb.set_trace()
-
-    if write:
-        SOLPSobj.writeXport()
+    SOLPSobj.writeXport()
 
 if __name__=='__main__':
     import sys
-    _,workdir,gfile_loc,lambdaq=sys.argv
-    main(workdir,gfile_loc,lambdaq,1e21,250)
+    _,workdir,lambdaq=sys.argv
+    main(workdir,lambdaq)
     pass
